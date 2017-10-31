@@ -1,6 +1,7 @@
 #version 150
 in vec2 inPosition;
-out vec3 vertColor; // output from this shader to the next pipeline stage
+smooth out vec3 normal;
+smooth out vec3 lightDirection;
 
 uniform float time; // variable constant for all vertices in a single draw
 uniform mat4 mMv;
@@ -14,12 +15,11 @@ vec3 getNormal(vec2 position);
 void main() {
     vec3 position = getPositionWithZ(inPosition);
     vec4 positionMv = mMv * vec4(position, 1.0);
-    vec3 lightDirection = normalize(lightSource - positionMv.xyz);
-    vec3 normal = getNormal(inPosition);
-    float NdotL = dot(lightDirection, normal);
+
+    lightDirection = normalize(lightSource - positionMv.xyz);
+    normal = mat3(mMv) * getNormal(inPosition);
 
     gl_Position = mProj * positionMv;
-    vertColor = vec3(NdotL);
 }
 
 vec3 getPositionWithZ(vec2 position) {
