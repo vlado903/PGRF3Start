@@ -1,4 +1,4 @@
-package grid;
+package ul01;
 
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -27,15 +27,19 @@ public class WorldRenderer implements GLEventListener, MouseListener,
     private static final int NUM_OF_FUNCTIONS = 6;
 
     private int width, height;
-    private int oldX, oldY;
+    private double oldX;
+    private double oldY;
+    private boolean mouseTracking;
+
     private int shaderProgram, locMv, locProj, locEyePos, locTime,
-            locFunction, locComputeLightInFS, locSpotlight, locColorMode;
+    locFunction, locComputeLightInFS, locSpotlight, locColorMode, locNormalTexture;
     private float time = 0;
     private int function = 2;
     private int textureIndex = 4;
 
     private boolean computeLightInFS = true;
     private boolean spotlight = false;
+    private boolean useNormalTexture = true;
     private int colorMode = 3;
 
     private Camera cam = new Camera();
@@ -54,6 +58,7 @@ public class WorldRenderer implements GLEventListener, MouseListener,
         OGLUtils.shaderCheck(gl);
         OGLUtils.printOGLparameters(gl);
 
+
         shaderProgram = ShaderUtils.loadProgram(gl,
                 "/shaders/shade.vert",
                 "/shaders/shade.frag",
@@ -69,6 +74,7 @@ public class WorldRenderer implements GLEventListener, MouseListener,
         locFunction = gl.glGetUniformLocation(shaderProgram, "function");
         locComputeLightInFS = gl.glGetUniformLocation(shaderProgram, "computeLightInFS");
         locSpotlight = gl.glGetUniformLocation(shaderProgram, "spotlight");
+        locNormalTexture = gl.glGetUniformLocation(shaderProgram, "normalTexture");
         locColorMode = gl.glGetUniformLocation(shaderProgram, "colorMode");
 
         try {
@@ -99,7 +105,6 @@ public class WorldRenderer implements GLEventListener, MouseListener,
     @Override
     public void display(GLAutoDrawable glDrawable) {
         GL4 gl = glDrawable.getGL().getGL4();
-
         gl.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         gl.glClear(GL4.GL_COLOR_BUFFER_BIT | GL4.GL_DEPTH_BUFFER_BIT);
 
@@ -115,6 +120,7 @@ public class WorldRenderer implements GLEventListener, MouseListener,
         gl.glUniform1i(locFunction, function);
         gl.glUniform1i(locComputeLightInFS, computeLightInFS ? 1 : 0);
         gl.glUniform1i(locSpotlight, spotlight ? 1 : 0);
+        gl.glUniform1i(locNormalTexture, useNormalTexture ? 1 : 0);
         gl.glUniform1i(locColorMode, colorMode);
 
         gl.glActiveTexture(GL4.GL_TEXTURE0);
@@ -130,7 +136,7 @@ public class WorldRenderer implements GLEventListener, MouseListener,
         gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "chosenTextureHeight"), 2);
 
         gl.glEnable(GL4.GL_DEPTH_TEST);
-        gl.glPolygonMode(GL4.GL_CULL_FACE, GL4.GL_FILL);
+        gl.glEnable(GL4.GL_POLYGON_SMOOTH);
 
         // bind and draw
         buffers.draw(GL4.GL_TRIANGLES, shaderProgram);
@@ -146,6 +152,7 @@ public class WorldRenderer implements GLEventListener, MouseListener,
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        mouseTracking = !mouseTracking;
     }
 
     @Override
@@ -168,14 +175,16 @@ public class WorldRenderer implements GLEventListener, MouseListener,
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        cam = cam.addAzimuth(Math.PI * (e.getX() - oldX) / width)
-                .addZenith(Math.PI * (e.getY() - oldY) / height);
-        oldX = e.getX();
-        oldY = e.getY();
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        if (mouseTracking) {
+            cam = cam.addAzimuth(-1 * Math.PI * (e.getX() - oldX) / Math.min(width, height))
+                    .addZenith(-1 * Math.PI * (e.getY() - oldY) / Math.min(width, height));
+            oldX = e.getX();
+            oldY = e.getY();
+        }
     }
 
     @Override
@@ -221,12 +230,16 @@ public class WorldRenderer implements GLEventListener, MouseListener,
         cam = cam.backward((float) e.getWheelRotation() / 5);
     }
 
-    public void switchLightningMode() {
-        computeLightInFS = !computeLightInFS;
+    public void setComputeLightInFS(boolean computeLightInFS) {
+        this.computeLightInFS = computeLightInFS;
     }
 
-    public void switchColorMode() {
-        colorMode = (colorMode + 1) % 4;
+    public void setColorMode(int colorMode) {
+        this.colorMode = colorMode;
+    }
+
+    public void setUseNormalTexture(boolean useNormalTexture) {
+        this.useNormalTexture = useNormalTexture;
     }
 
     public void changeTexture() {

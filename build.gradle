@@ -4,6 +4,28 @@ repositories {
     mavenCentral()
 }
 
+compileJava.options.encoding = 'UTF-8'
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'ul01.Application'
+    }
+    baseName = project.name
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/main/java"]
+        }
+        resources {
+            srcDirs = ["src/main/resources"]
+        }
+    }
+}
+
 dependencies {
     compile group: 'org.jogamp.gluegen', name: 'gluegen-rt', version: '2.3.2'
     compile group: 'org.jogamp.jogl', name: 'jogl-all', version: '2.3.2'

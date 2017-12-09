@@ -1,4 +1,4 @@
-package grid;
+package ul01;
 
 import com.jogamp.opengl.GL4;
 import oglutils.OGLBuffers;
@@ -37,7 +37,7 @@ public class GridFactory {
         }
 
         OGLBuffers.Attrib[] attributes = {
-                new OGLBuffers.Attrib("inPosition", 2)    // floats
+                new OGLBuffers.Attrib("inPosition", 2)
         };
 
         return new OGLBuffers(gl, vb, attributes, ib);
