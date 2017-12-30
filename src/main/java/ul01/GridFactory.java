@@ -5,11 +5,9 @@ import oglutils.OGLBuffers;
 
 public class GridFactory {
 
-    public static OGLBuffers gridGenerate(GL4 gl, int rows, int columns) {
-
+    public static OGLBuffers generateGrid(GL4 gl, int rows, int columns) {
         int vertices = rows * columns;
         int triangles = (rows - 1) * (columns - 1) * 2;
-
 
         float[] vb = new float[vertices * 2];
         int[] ib = new int[triangles * 3];

@@ -16,6 +16,7 @@ const float specularLight = 0.3;
 
 uniform mat4 mMv;
 uniform mat4 mProj;
+uniform mat4 mTrans;
 uniform vec3 eyePos;
 uniform float time;
 uniform int function;
@@ -104,7 +105,7 @@ vec3 getTangent(vec2 position) {
 
 void main() {
     position = getPositionWithZ(inPosition);
-    vec4 positionMv = mMv * vec4(position, 1.0);
+    vec4 positionMv =  mMv * mTrans * vec4(position, 1.0);
     lightSource = (mMv * vec4(lightSource, 1.0)).xyz;
     spotlightSource = (mMv * vec4(spotlightSource, 1.0)).xyz;
 

@@ -18,21 +18,20 @@ public class MainWindow extends JFrame {
     private static final int FPS = 60; // animator's target frames per second
 
     private JCheckBox computeInVSCheckbox = new JCheckBox("Osvětlení ve VS");
-    private JLabel colorModeLabel = new JLabel("Obarvení:");
     private String[] colorModesFragment = new String[]{"Pozice", "Normála", "Textura", "Parallax"};
-    private String[] colorModesVertex = new String[]{"Pozice", "Normála", "Textura"};
-    private JComboBox<String> colorModeCombobox = new JComboBox<String>(colorModesFragment);
+    private JComboBox<String> colorModeCombobox = new JComboBox<>(colorModesFragment);
     private JCheckBox useNormalTextureCheckbox = new JCheckBox("Normálová textura", true);
     private JButton changeTextureButton = new JButton("Změnit texturu");
     private JButton changeFunctionButton = new JButton("Změnit funkci");
     private JCheckBox spotlightCheckbox = new JCheckBox("Baterka");
     private JButton resetCameraButton = new JButton("Reset kamery");
+    private JSlider blurSlider = new JSlider(1, 10);
 
     private WorldRenderer renderer;
 
     public MainWindow() throws HeadlessException {
         setLocationRelativeTo(null);
-        setSize(980, 640);
+        setSize(800, 600);
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -43,21 +42,27 @@ public class MainWindow extends JFrame {
 
         JPanel toolbar = new JPanel();
         add(toolbar, BorderLayout.NORTH);
-        toolbar.add(colorModeLabel);
+        toolbar.add(new JLabel("Obarvení"));
         toolbar.add(colorModeCombobox);
+        toolbar.add(new JLabel("Motion Blur"));
+        toolbar.add(blurSlider);
         toolbar.add(computeInVSCheckbox);
         toolbar.add(useNormalTextureCheckbox);
         toolbar.add(spotlightCheckbox);
-        toolbar.add(changeTextureButton);
-        toolbar.add(changeFunctionButton);
-        toolbar.add(resetCameraButton);
 
-        colorModeCombobox.setSelectedIndex(3);
+        JPanel toolbar2 = new JPanel();
+        add(toolbar2, BorderLayout.SOUTH);
+        toolbar2.add(changeTextureButton);
+        toolbar2.add(changeFunctionButton);
+        toolbar2.add(resetCameraButton);
 
         initListeners();
 
         GLCanvas canvas = createCanvas();
         add(canvas);
+
+        colorModeCombobox.setSelectedIndex(renderer.getColorMode());
+        blurSlider.setValue(renderer.getBlurTextureCount());
 
         final FPSAnimator animator = new FPSAnimator(canvas, FPS, true);
         addWindowListener(new WindowAdapter() {
@@ -99,6 +104,7 @@ public class MainWindow extends JFrame {
         changeTextureButton.addActionListener(e -> renderer.changeTexture());
         changeFunctionButton.addActionListener(e -> renderer.changeFunction());
         resetCameraButton.addActionListener(e -> renderer.resetCamera());
+        blurSlider.addChangeListener(e -> renderer.setBlurTextureCount(blurSlider.getValue()));
     }
 
 
@@ -113,7 +119,7 @@ public class MainWindow extends JFrame {
         canvas.addMouseMotionListener(renderer);
         canvas.addMouseWheelListener(renderer);
         canvas.addKeyListener(renderer);
-        canvas.setSize(980, 640);
+        canvas.setSize(800, 600);
 
         return canvas;
     }
